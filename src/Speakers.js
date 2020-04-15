@@ -15,44 +15,31 @@ import SpeakerData from './SpeakerData';
 import SpeakerDetail from './SpeakerDetail';
 import { ConfigContext } from './App';
 import speakerReducer from './speakerReducer';
+import useAxiosFetch from './useAxiosFetch';
 
 const Speakers = ({}) => {
   const [speakingSaturday, setSpeakingSaturday] = useState(true);
   const [speakingSunday, setSpeakingSunday] = useState(true);
 
-  const [speakerList, dispatch] = useReducer(speakerReducer, []);
-  const [isLoading, setIsLoading] = useState(true);
+  // const [speakerList, dispatch] = useReducer(speakerReducer, []);
+  // const [isLoading, setIsLoading] = useState(true);
 
   const context = useContext(ConfigContext);
 
-  useEffect(() => {
-    setIsLoading(true);
-    new Promise(function(resolve) {
-      setTimeout(function() {
-        resolve();
-      }, 1000);
-    }).then(() => {
-      setIsLoading(false);
-      const speakerListServerFilter = SpeakerData.filter(({ sat, sun }) => {
-        return (speakingSaturday && sat) || (speakingSunday && sun);
-      });
-      dispatch({
-        type: 'setSpeakerList',
-        data: speakerListServerFilter
-      });
-      //setSpeakerList(speakerListServerFilter);
-    });
-    return () => {
-      console.log('cleanup');
-    };
-  }, []); // [speakingSunday, speakingSaturday]);
+  const {
+    data,
+    isLoading,
+    hasErrored,
+    errorMessage,
+    updateDataRecord
+  } = useAxiosFetch('http://localhost:4000/speakers', []);
 
   const handleChangeSaturday = () => {
     setSpeakingSaturday(!speakingSaturday);
   };
 
   const newSpeakerList = useMemo(() => {
-    return speakerList
+    return data
       .filter(
         ({ sat, sun }) => (speakingSaturday && sat) || (speakingSunday && sun)
       )
@@ -65,9 +52,16 @@ const Speakers = ({}) => {
         }
         return 0;
       });
-  }, [speakingSaturday, speakingSunday, speakerList]);
+  }, [speakingSaturday, speakingSunday, data]);
 
   const speakerListFiltered = isLoading ? [] : newSpeakerList;
+  if (hasErrored) {
+    return (
+      <div>
+        {errorMessage} &nbsp; 'Make sure you have launched the json-server'
+      </div>
+    );
+  }
 
   const handleChangeSunday = () => {
     setSpeakingSunday(!speakingSunday);
