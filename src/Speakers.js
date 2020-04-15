@@ -3,7 +3,8 @@ import React, {
   useEffect,
   useContext,
   useReducer,
-  useCallback
+  useCallback,
+  useMemo
 } from 'react';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -50,21 +51,23 @@ const Speakers = ({}) => {
     setSpeakingSaturday(!speakingSaturday);
   };
 
-  const speakerListFiltered = isLoading
-    ? []
-    : speakerList
-        .filter(
-          ({ sat, sun }) => (speakingSaturday && sat) || (speakingSunday && sun)
-        )
-        .sort(function(a, b) {
-          if (a.firstName < b.firstName) {
-            return -1;
-          }
-          if (a.firstName > b.firstName) {
-            return 1;
-          }
-          return 0;
-        });
+  const newSpeakerList = useMemo(() => {
+    return speakerList
+      .filter(
+        ({ sat, sun }) => (speakingSaturday && sat) || (speakingSunday && sun)
+      )
+      .sort(function(a, b) {
+        if (a.firstName < b.firstName) {
+          return -1;
+        }
+        if (a.firstName > b.firstName) {
+          return 1;
+        }
+        return 0;
+      });
+  }, [speakingSaturday, speakingSunday, speakerList]);
+
+  const speakerListFiltered = isLoading ? [] : newSpeakerList;
 
   const handleChangeSunday = () => {
     setSpeakingSunday(!speakingSunday);
@@ -117,21 +120,23 @@ const Speakers = ({}) => {
         </div>
         <div className="row">
           <div className="card-deck">
-            {speakerListFiltered.map(
-              ({ id, firstName, lastName, bio, favorite }) => {
-                return (
-                  <SpeakerDetail
-                    key={id}
-                    id={id}
-                    favorite={favorite}
-                    onHeartFavoriteHandler={heartFavoriteHandler}
-                    firstName={firstName}
-                    lastName={lastName}
-                    bio={bio}
-                  />
-                );
-              }
-            )}
+            {speakerListFiltered
+              ? speakerListFiltered.map(
+                  ({ id, firstName, lastName, bio, favorite }) => {
+                    return (
+                      <SpeakerDetail
+                        key={id}
+                        id={id}
+                        favorite={favorite}
+                        onHeartFavoriteHandler={heartFavoriteHandler}
+                        firstName={firstName}
+                        lastName={lastName}
+                        bio={bio}
+                      />
+                    );
+                  }
+                )
+              : null}
           </div>
         </div>
       </div>
