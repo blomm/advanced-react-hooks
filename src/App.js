@@ -5,8 +5,9 @@ import Speakers from './Speakers';
 export const ConfigContext = React.createContext();
 
 const configValue = {
-  showSignMeUp: false,
-  showSpeakerSpeakingDays: true
+  showSignMeUp: true,
+  showSpeakerSpeakingDays: true,
+  loggedInUserEmail: 'mike@test.co'
 };
 
 const pageToShow = pageName => {
